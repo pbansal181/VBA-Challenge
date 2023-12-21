@@ -1,0 +1,148 @@
+Sub tickerchallenge():
+
+'To run the macro in each of the worksheets
+For Each ws In Worksheets
+
+'Give table a name
+Dim WorksheetName As String
+WorksheetName = ws.Name
+
+'Assign column names that needs to calculated
+ws.Cells(1, 9) = "Ticker"
+ws.Cells(1, 10) = "Yearly Change"
+ws.Cells(1, 11) = "Percent Change"
+ws.Cells(1, 12) = "Total Stock Volume"
+
+'Other variables for various calculation
+Dim PerChn As Double
+
+'Create a variable to store total number of rows in worksheet
+Dim TotRow As Long
+TotRow = Range("A1").End(xlDown).Row
+
+
+'create loop variables and a tickercounter
+Dim i As Long   'this shows current row
+Dim j As Long   'this shows loop for ticker
+Dim TCount As Long
+
+'set ticker count and ticker loop variable to 2
+j = 2
+TCount = 2
+
+'loop to check if ticker value has changed
+ For i = 2 To TotRow
+ 
+    If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+        
+        'caluculate Ticker
+        ws.Cells(TCount, 9).Value = ws.Cells(i, 1).Value
+        
+        'Calculate Yearly Change
+        ws.Cells(TCount, 10).Value = ws.Cells(i, 6).Value - ws.Cells(j, 3).Value
+        
+        'Color cells according to negative and positive values
+        If ws.Cells(TCount, 10).Value > 0 Then
+            ws.Cells(TCount, 10).Interior.Color = vbGreen
+        
+        Else
+            ws.Cells(TCount, 10).Interior.Color = vbRed
+        
+        End If
+        
+        'Calculate Percent Change
+        If ws.Cells(j, 3).Value <> 0 Then
+        PerChn = ((ws.Cells(i, 6).Value - ws.Cells(j, 3).Value) / ws.Cells(j, 3).Value)
+        
+        'Assign value to the column in percentage format
+        ws.Cells(TCount, 11).Value = Format(PerChn, "Percent")
+        
+        Else
+        ws.Cells(TCount, 11).Value = Format(0, "Percent")
+        
+        End If
+        
+        'Total volume calculation
+        ws.Cells(TCount, 12).Value = WorksheetFunction.Sum(Range(ws.Cells(j, 7), ws.Cells(i, 7)))
+        
+        TCount = TCount + 1
+        
+        j = i + 1
+    
+    End If
+    
+ Next i
+
+'Add functionality to your script to return the stock with the "Greatest % increase", "Greatest % decrease", and "Greatest total volume"
+'Declare 3 variables and store the value as in first entry(2nd row)
+
+Dim GPI As Double   'Greatest percentage increase
+Dim GPD As Double   'Greatest percentage decrease
+Dim GTV As Double   'Greatest total volume
+
+GPI = ws.Cells(2, 11).Value
+GPD = ws.Cells(2, 11).Value
+GTV = ws.Cells(2, 12).Value
+
+'Assign cell name to enter the values
+
+ws.Cells(2, 15).Value = "Greatest % Increase"
+ws.Cells(3, 15).Value = "Greatest % Decrease"
+ws.Cells(4, 15).Value = "Greatest Total Volume"
+ws.Cells(1, 16).Value = "Ticker"
+ws.Cells(1, 17).Value = "Value"
+
+'Calculate total number of rows in New ticker column
+Dim RowCountNew As Long
+RowCountNew = Range("I1").End(xlDown).Row
+
+For i = 2 To RowCountNew
+
+'Greatest percentage increase calculation
+    If ws.Cells(i, 11).Value > GPI Then
+        GPI = ws.Cells(i, 11).Value
+        ws.Cells(2, 16) = ws.Cells(i, 9).Value
+        
+    Else
+        GPI = GPI
+        
+    End If
+    
+'Greatest percent decrease calculation
+If ws.Cells(i, 11).Value < GPD Then
+        GPD = ws.Cells(i, 11).Value
+        ws.Cells(3, 16) = ws.Cells(i, 9).Value
+        
+    Else
+        GPD = GPD
+        
+    End If
+
+
+'Greatest total vloume calculation
+    If ws.Cells(i, 12).Value > GTV Then
+    
+        GTV = ws.Cells(i, 12).Value
+        ws.Cells(4, 16).Value = ws.Cells(i, 9).Value
+        
+    Else
+        
+        GTV = GTV
+
+    End If
+
+     ws.Cells(2, 17).Value = Format(GPI, "Percent")
+     ws.Cells(3, 17).Value = Format(GPD, "Percent")
+     ws.Cells(4, 17).Value = Format(GTV, "Scientific")
+
+ Next i
+ 
+ 'Adjust the column width of all the calculations
+ Worksheets(WorksheetName).Columns("A:Z").AutoFit
+ 
+ 
+Next ws
+
+End Sub
+
+
